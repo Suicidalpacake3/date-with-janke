@@ -454,83 +454,107 @@ const teases = [
 ];
 let teaseIdx = 0;
 
-/* Smooth-flee model:
-   - The button keeps its place in the layout and only shifts via translate(offsetX, offsetY).
-   - Each frame we look at where the cursor is relative to the button's HOME centre.
-   - Inside the danger radius -> we set a target offset that pushes the button
-     directly away from the cursor (capped to stay on screen). The CSS transition
-     makes it glide there smoothly instead of snapping.
-   - Outside the danger radius -> target eases back to (0,0); once home it sits still. */
+/* Smooth-flee model (oscillation-proof):
+   - The button stays in normal layout and only shifts via translate(offsetX, offsetY).
+   - HOME is measured ONCE from the static position and never re-read mid-animation,
+     so the flee decision can't drift frame to frame.
+   - Hysteresis: it flees when the cursor is within DANGER of HOME, but only returns
+     home once the cursor passes the larger SAFE radius. The gap stops the back-and-forth.
+   - A target offset is computed only when it needs to change; the CSS transition glides. */
 
-const DANGER   = 130;   // how close (px) the cursor gets before the button reacts
-const PUSH     = 150;   // how far (px) the button tries to sit from the cursor
-const MARGIN   = 12;    // keep this far from the viewport edges
+const DANGER  = 75;    // cursor within this (px) of HOME -> button flees
+const SAFE    = 130;   // cursor must get this far from HOME before it returns (hysteresis)
+const PUSH    = 85;    // how far (px) the fled button sits from the cursor
+const MAX_OFF = 90;    // cap how far the button can drift from home (keeps it nearby)
+const MARGIN  = 12;    // keep this far from viewport edges
 
 let offsetX = 0, offsetY = 0;          // current applied offset
-let targetX = 0, targetY = 0;          // where we want the offset to be
-let pointer = { x: -9999, y: -9999 };  // last known cursor position
+let targetX = 0, targetY = 0;          // desired offset
+let pointer = { x: -9999, y: -9999 };  // last cursor position
+let fleeing = false;                   // current state (fleeing vs resting)
 let teasedThisApproach = false;
+let home = { x: 0, y: 0 };             // FIXED home centre, measured once
 
-function homeCentre() {
-  // Measure the button's home position by temporarily ignoring the current offset.
+function measureHome() {
+  // Skip if the button isn't visible (e.g. on a later page) so home stays valid.
+  if (noBtn.offsetParent === null) return;
+  // Read the static centre only while no offset is applied, so it's stable.
+  const wasTransition = noBtn.style.transition;
+  noBtn.style.transition = 'none';
+  const prevTransform = noBtn.style.transform;
+  noBtn.style.transform = 'translate(0px,0px)';
   const r = noBtn.getBoundingClientRect();
-  return { x: r.left + r.width / 2 - offsetX, y: r.top + r.height / 2 - offsetY };
+  home.x = r.left + r.width / 2;
+  home.y = r.top + r.height / 2;
+  // restore current visual offset, then re-enable transition next frame
+  noBtn.style.transform = prevTransform || ('translate(' + offsetX + 'px,' + offsetY + 'px)');
+  requestAnimationFrame(() => { noBtn.style.transition = wasTransition || ''; });
+}
+
+function computeFlee() {
+  // Push the button a short way directly away from the cursor, relative to FIXED home.
+  const dx = pointer.x - home.x;
+  const dy = pointer.y - home.y;
+  const len = Math.hypot(dx, dy) || 1;
+  let tx = (-dx / len) * PUSH;
+  let ty = (-dy / len) * PUSH;
+
+  // Hard cap: never drift more than MAX_OFF from home, so it stays nearby.
+  const offLen = Math.hypot(tx, ty);
+  if (offLen > MAX_OFF) { tx = (tx / offLen) * MAX_OFF; ty = (ty / offLen) * MAX_OFF; }
+
+  // Clamp to the viewport, but never beyond the MAX_OFF box either.
+  const w = noBtn.offsetWidth, h = noBtn.offsetHeight;
+  const minX = Math.max(-MAX_OFF, MARGIN + w / 2 - home.x);
+  const maxX = Math.min( MAX_OFF, window.innerWidth  - MARGIN - w / 2 - home.x);
+  const minY = Math.max(-MAX_OFF, MARGIN + h / 2 - home.y);
+  const maxY = Math.min( MAX_OFF, window.innerHeight - MARGIN - h / 2 - home.y);
+  tx = Math.max(minX, Math.min(maxX, tx));
+  ty = Math.max(minY, Math.min(maxY, ty));
+
+  // If a clamp left it still under the cursor, nudge along the freer axis (small).
+  if (Math.hypot(pointer.x - (home.x + tx), pointer.y - (home.y + ty)) < DANGER) {
+    const freeRight = maxX - tx, freeLeft = tx - minX;
+    tx += (freeRight > freeLeft ? 1 : -1) * Math.min(PUSH, Math.max(freeRight, freeLeft));
+    tx = Math.max(minX, Math.min(maxX, tx));
+  }
+  return { tx, ty };
 }
 
 function updateTarget() {
-  const home = homeCentre();
-  const dx = pointer.x - home.x;
-  const dy = pointer.y - home.y;
-  const dist = Math.hypot(dx, dy);
+  const dist = Math.hypot(pointer.x - home.x, pointer.y - home.y);
 
-  if (dist < DANGER) {
-    // Push directly away from the cursor.
-    const len = dist || 1;
-    let tx = (-dx / len) * PUSH;
-    let ty = (-dy / len) * PUSH;
-
-    // Clamp so the button stays fully on-screen.
-    const w = noBtn.offsetWidth, h = noBtn.offsetHeight;
-    const minX = MARGIN + w / 2 - home.x;
-    const maxX = window.innerWidth  - MARGIN - w / 2 - home.x;
-    const minY = MARGIN + h / 2 - home.y;
-    const maxY = window.innerHeight - MARGIN - h / 2 - home.y;
-    tx = Math.max(minX, Math.min(maxX, tx));
-    ty = Math.max(minY, Math.min(maxY, ty));
-
-    // If clamping pinned it near a corner and the cursor is still close,
-    // slide sideways along the longer free axis so it keeps escaping.
-    const newCx = home.x + tx, newCy = home.y + ty;
-    if (Math.hypot(pointer.x - newCx, pointer.y - newCy) < DANGER) {
-      const freeRight = maxX - tx, freeLeft = tx - minX;
-      tx += (freeRight > freeLeft ? 1 : -1) * Math.min(PUSH, Math.max(freeRight, freeLeft));
-      tx = Math.max(minX, Math.min(maxX, tx));
-    }
-
-    targetX = tx;
-    targetY = ty;
-
-    if (!teasedThisApproach) {
-      ps.style.opacity = 0;
-      setTimeout(() => {
-        ps.textContent = teases[teaseIdx % teases.length];
-        teaseIdx++;
-        ps.style.opacity = 1;
-      }, 150);
-      teasedThisApproach = true;
+  if (!fleeing) {
+    // Resting: only start fleeing if the cursor gets close.
+    if (dist < DANGER) {
+      fleeing = true;
+      const f = computeFlee();
+      targetX = f.tx; targetY = f.ty;
+      if (!teasedThisApproach) {
+        ps.style.opacity = 0;
+        setTimeout(() => {
+          ps.textContent = teases[teaseIdx % teases.length];
+          teaseIdx++;
+          ps.style.opacity = 1;
+        }, 150);
+        teasedThisApproach = true;
+      }
     }
   } else {
-    // Cursor is far -> go home and rest.
-    targetX = 0;
-    targetY = 0;
-    if (dist > DANGER + 90) teasedThisApproach = false;  // re-arm tease for next approach
+    // Fleeing: keep dodging until the cursor passes the larger SAFE radius.
+    if (dist > SAFE) {
+      fleeing = false;
+      targetX = 0; targetY = 0;
+      teasedThisApproach = false;
+    } else {
+      const f = computeFlee();
+      targetX = f.tx; targetY = f.ty;
+    }
   }
 }
 
 function tick() {
   updateTarget();
-  // Only write to the DOM when the target actually changed, so the eased
-  // CSS transition drives the glide (no jitter, no teleporting).
   if (targetX !== offsetX || targetY !== offsetY) {
     offsetX = targetX;
     offsetY = targetY;
@@ -538,14 +562,18 @@ function tick() {
   }
   requestAnimationFrame(tick);
 }
-requestAnimationFrame(tick);
+
+// Measure home after layout settles, then start the loop.
+window.addEventListener('load', () => { measureHome(); requestAnimationFrame(tick); });
 
 document.addEventListener('mousemove', (e) => { pointer.x = e.clientX; pointer.y = e.clientY; });
+document.addEventListener('scroll', measureHome, { passive: true });
 
 window.addEventListener('resize', () => {
-  // Reset to home on resize so offsets can't drift off-screen.
   offsetX = offsetY = targetX = targetY = 0;
+  fleeing = false;
   noBtn.style.transform = 'translate(0px,0px)';
+  requestAnimationFrame(measureHome);
 });
 
 // Touch / click safety net — never allow "no".
@@ -553,8 +581,10 @@ noBtn.addEventListener('touchstart', (e) => {
   e.preventDefault();
   pointer.x = e.touches[0].clientX;
   pointer.y = e.touches[0].clientY;
-  updateTarget();
-  offsetX = targetX; offsetY = targetY;
+  fleeing = true;
+  const f = computeFlee();
+  offsetX = targetX = f.tx;
+  offsetY = targetY = f.ty;
   noBtn.style.transform = 'translate(' + offsetX + 'px,' + offsetY + 'px)';
 }, { passive: false });
 noBtn.addEventListener('click', (e) => e.preventDefault());
