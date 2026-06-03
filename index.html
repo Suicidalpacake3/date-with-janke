@@ -983,21 +983,21 @@ document.getElementById('yesBtn').addEventListener('click', () => {
       mins += '<div class="time-opt' + (selMin === m ? ' sel' : '') +
               '" data-min="' + m + '">' + pad(m) + '</div>';
     }
-    const ampmLabel = selAm === 'PM' ? 'nm' : 'vm';
+    const ampmLabel = selAm === 'PM' ? 'AM' : 'PM';
     const disp = (selHour !== null && selMin !== null)
       ? selHour + ':' + pad(selMin) + ' ' + ampmLabel
       : '--:-- --';
 
     timePop.innerHTML =
       '<div class="time-display">' + disp + '</div>' +
-      '<div class="time-sub">tik uur, minuut & vm/nm</div>' +
+      '<div class="time-sub">tik uur, minuut & AM/PM</div>' +
       '<div class="time-cols">' +
         '<div class="time-col"><h4>Uur</h4><div class="time-scroll">' + hours + '</div></div>' +
         '<div class="time-col"><h4>Min</h4><div class="time-scroll">' + mins + '</div></div>' +
       '</div>' +
       '<div class="ampm-row">' +
-        '<div class="time-opt' + (selAm === 'AM' ? ' sel' : '') + '" data-ampm="AM">vm</div>' +
-        '<div class="time-opt' + (selAm === 'PM' ? ' sel' : '') + '" data-ampm="PM">nm</div>' +
+        '<div class="time-opt' + (selAm === 'AM' ? ' sel' : '') + '" data-ampm="AM">AM</div>' +
+        '<div class="time-opt' + (selAm === 'PM' ? ' sel' : '') + '" data-ampm="PM">PM</div>' +
       '</div>' +
       '<button type="button" class="time-done">Klaar</button>';
   }
@@ -1008,7 +1008,7 @@ document.getElementById('yesBtn').addEventListener('click', () => {
     let h24 = selHour % 12;
     if (selAm === 'PM') h24 += 12;
     timeInput.value = pad(h24) + ':' + pad(selMin);
-    timeTrigger.textContent = selHour + ':' + pad(selMin) + ' ' + (selAm === 'PM' ? 'nm' : 'vm');
+    timeTrigger.textContent = selHour + ':' + pad(selMin) + ' ' + (selAm === 'PM' ? 'PM' : 'AM');
     timeTrigger.classList.remove('placeholder');
     return true;
   }
@@ -1124,7 +1124,7 @@ function prettyDate(dateStr, timeStr) {
   // 12-hour time with vm/nm
   let h = dt.getHours();
   const m = dt.getMinutes();
-  const ampm = h >= 12 ? 'nm' : 'vm';
+  const ampm = h >= 12 ? 'PM' : 'AM';
   let h12 = h % 12; if (h12 === 0) h12 = 12;
   const niceTime = h12 + ':' + String(m).padStart(2, '0') + ' ' + ampm;
   return { nice: niceDate, time: niceTime, dateObj: dt };
