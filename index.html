@@ -181,9 +181,12 @@
     background: transparent;
     color: var(--rose-deep);
     border: 1.5px solid var(--rose);
-    /* positioned via JS using fixed coordinates when it flees */
+    position: relative;
+    z-index: 50;
+    will-change: transform;
+    /* glides via translate; eased so it never teleports */
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   }
-  #noBtn.fleeing { position: fixed; z-index: 50; }
 
   .ps {
     margin-top: 30px;
@@ -278,8 +281,23 @@
   .summary strong { font-family: 'Jost', sans-serif; font-size: 0.78rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--rose); display: block; }
   .summary .val { margin-bottom: 12px; display: block; }
 
-  .cal-links { display: flex; flex-direction: column; gap: 12px; align-items: center; margin-top: 26px; }
-  .cal-links a { text-decoration: none; }
+  .cal-links {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+    margin-top: 28px;
+    max-width: 360px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .cal-links a {
+    text-decoration: none;
+    display: block;
+    text-align: center;
+  }
+  /* buttons used as links need to render as full blocks */
+  .cal-links .btn { display: block; width: 100%; }
 
   .sending { font-family:'Cormorant Garamond', serif; font-style: italic; color: var(--gold-deep); margin-top: 16px; min-height: 1.3em; }
 
@@ -344,7 +362,7 @@
           <option value="Hiking date">Hiking date &#9968;&#65039;</option>
           <option value="Coffee & bookshop wander">Coffee &amp; bookshop wander &#9749;</option>
           <option value="Cosy movie night">Cosy movie night &#127916;</option>
-          <option value="Sunset beach walk">Sunset beach walk &#127749;</option>
+          <option value="Union Buildings gardens stroll">Union Buildings gardens stroll &#127807;</option>
           <option value="Mini-golf & milkshakes">Mini-golf &amp; milkshakes &#9971;</option>
           <option value="Art gallery afternoon">Art gallery afternoon &#127912;</option>
           <option value="Ice-cream & a slow stroll">Ice-cream &amp; a slow stroll &#127846;</option>
@@ -435,83 +453,111 @@ const teases = [
   "You can't catch it. Yes is right there \u2192",
 ];
 let teaseIdx = 0;
-let homeLeft = null, homeTop = null;   // remembered default position
 
-function rememberHome() {
-  if (noBtn.classList.contains('fleeing')) return;
+/* Smooth-flee model:
+   - The button keeps its place in the layout and only shifts via translate(offsetX, offsetY).
+   - Each frame we look at where the cursor is relative to the button's HOME centre.
+   - Inside the danger radius -> we set a target offset that pushes the button
+     directly away from the cursor (capped to stay on screen). The CSS transition
+     makes it glide there smoothly instead of snapping.
+   - Outside the danger radius -> target eases back to (0,0); once home it sits still. */
+
+const DANGER   = 130;   // how close (px) the cursor gets before the button reacts
+const PUSH     = 150;   // how far (px) the button tries to sit from the cursor
+const MARGIN   = 12;    // keep this far from the viewport edges
+
+let offsetX = 0, offsetY = 0;          // current applied offset
+let targetX = 0, targetY = 0;          // where we want the offset to be
+let pointer = { x: -9999, y: -9999 };  // last known cursor position
+let teasedThisApproach = false;
+
+function homeCentre() {
+  // Measure the button's home position by temporarily ignoring the current offset.
   const r = noBtn.getBoundingClientRect();
-  homeLeft = r.left;
-  homeTop  = r.top;
+  return { x: r.left + r.width / 2 - offsetX, y: r.top + r.height / 2 - offsetY };
 }
-window.addEventListener('load', rememberHome);
+
+function updateTarget() {
+  const home = homeCentre();
+  const dx = pointer.x - home.x;
+  const dy = pointer.y - home.y;
+  const dist = Math.hypot(dx, dy);
+
+  if (dist < DANGER) {
+    // Push directly away from the cursor.
+    const len = dist || 1;
+    let tx = (-dx / len) * PUSH;
+    let ty = (-dy / len) * PUSH;
+
+    // Clamp so the button stays fully on-screen.
+    const w = noBtn.offsetWidth, h = noBtn.offsetHeight;
+    const minX = MARGIN + w / 2 - home.x;
+    const maxX = window.innerWidth  - MARGIN - w / 2 - home.x;
+    const minY = MARGIN + h / 2 - home.y;
+    const maxY = window.innerHeight - MARGIN - h / 2 - home.y;
+    tx = Math.max(minX, Math.min(maxX, tx));
+    ty = Math.max(minY, Math.min(maxY, ty));
+
+    // If clamping pinned it near a corner and the cursor is still close,
+    // slide sideways along the longer free axis so it keeps escaping.
+    const newCx = home.x + tx, newCy = home.y + ty;
+    if (Math.hypot(pointer.x - newCx, pointer.y - newCy) < DANGER) {
+      const freeRight = maxX - tx, freeLeft = tx - minX;
+      tx += (freeRight > freeLeft ? 1 : -1) * Math.min(PUSH, Math.max(freeRight, freeLeft));
+      tx = Math.max(minX, Math.min(maxX, tx));
+    }
+
+    targetX = tx;
+    targetY = ty;
+
+    if (!teasedThisApproach) {
+      ps.style.opacity = 0;
+      setTimeout(() => {
+        ps.textContent = teases[teaseIdx % teases.length];
+        teaseIdx++;
+        ps.style.opacity = 1;
+      }, 150);
+      teasedThisApproach = true;
+    }
+  } else {
+    // Cursor is far -> go home and rest.
+    targetX = 0;
+    targetY = 0;
+    if (dist > DANGER + 90) teasedThisApproach = false;  // re-arm tease for next approach
+  }
+}
+
+function tick() {
+  updateTarget();
+  // Only write to the DOM when the target actually changed, so the eased
+  // CSS transition drives the glide (no jitter, no teleporting).
+  if (targetX !== offsetX || targetY !== offsetY) {
+    offsetX = targetX;
+    offsetY = targetY;
+    noBtn.style.transform = 'translate(' + offsetX.toFixed(1) + 'px,' + offsetY.toFixed(1) + 'px)';
+  }
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+document.addEventListener('mousemove', (e) => { pointer.x = e.clientX; pointer.y = e.clientY; });
+
 window.addEventListener('resize', () => {
-  // snap home on resize to avoid stale coordinates
-  returnHome(true);
-  requestAnimationFrame(rememberHome);
+  // Reset to home on resize so offsets can't drift off-screen.
+  offsetX = offsetY = targetX = targetY = 0;
+  noBtn.style.transform = 'translate(0px,0px)';
 });
 
-function flee(pointerX, pointerY) {
-  const pad = 14;
-  const w = noBtn.offsetWidth;
-  const h = noBtn.offsetHeight;
-  const maxX = window.innerWidth  - w - pad;
-  const maxY = window.innerHeight - h - pad;
-
-  // candidate positions; choose one furthest from the pointer
-  let best = null, bestDist = -1;
-  for (let i = 0; i < 12; i++) {
-    const x = pad + Math.random() * (maxX - pad);
-    const y = pad + Math.random() * (maxY - pad);
-    const cx = x + w / 2, cy = y + h / 2;
-    const d = Math.hypot(cx - pointerX, cy - pointerY);
-    if (d > bestDist) { bestDist = d; best = { x, y }; }
-  }
-
-  if (!noBtn.classList.contains('fleeing')) {
-    noBtn.classList.add('fleeing');
-    noBtn.style.width = w + 'px';   // lock size so layout doesn't jump
-  }
-  noBtn.style.left = best.x + 'px';
-  noBtn.style.top  = best.y + 'px';
-
-  ps.style.opacity = 0;
-  setTimeout(() => {
-    ps.textContent = teases[teaseIdx % teases.length];
-    teaseIdx++;
-    ps.style.opacity = 1;
-  }, 180);
-}
-
-function returnHome(silent) {
-  if (!noBtn.classList.contains('fleeing')) return;
-  noBtn.classList.remove('fleeing');
-  noBtn.style.left = '';
-  noBtn.style.top  = '';
-  noBtn.style.width = '';
-  if (!silent) { ps.style.opacity = 0; }
-  requestAnimationFrame(rememberHome);
-}
-
-// Desktop: react to the pointer approaching
-noBtn.addEventListener('mouseenter', (e) => flee(e.clientX, e.clientY));
-noBtn.addEventListener('mousemove',  (e) => flee(e.clientX, e.clientY));
-
-// If the mouse moves away from where the button started, send it home
-document.addEventListener('mousemove', (e) => {
-  if (!noBtn.classList.contains('fleeing') || homeLeft === null) return;
-  const homeCx = homeLeft + noBtn.offsetWidth / 2;
-  const homeCy = homeTop  + noBtn.offsetHeight / 2;
-  const dist = Math.hypot(e.clientX - homeCx, e.clientY - homeCy);
-  if (dist > 150) returnHome();   // pointer left the home zone → glide back
-});
-
-// Touch / click safety net — never allow "no"
-noBtn.addEventListener('touchstart', (e) => { e.preventDefault(); flee(
-  e.touches[0].clientX, e.touches[0].clientY); }, { passive: false });
-noBtn.addEventListener('click', (e) => {
+// Touch / click safety net — never allow "no".
+noBtn.addEventListener('touchstart', (e) => {
   e.preventDefault();
-  flee(window.innerWidth / 2, window.innerHeight / 2);
-});
+  pointer.x = e.touches[0].clientX;
+  pointer.y = e.touches[0].clientY;
+  updateTarget();
+  offsetX = targetX; offsetY = targetY;
+  noBtn.style.transform = 'translate(' + offsetX + 'px,' + offsetY + 'px)';
+}, { passive: false });
+noBtn.addEventListener('click', (e) => e.preventDefault());
 
 /* =====================================================
    Navigation
@@ -695,12 +741,14 @@ function buildCalendarLinks(data, p) {
   a1.href = gcal;
   a1.target = '_blank';
   a1.rel = 'noopener';
-  a1.innerHTML = '<span class="btn btn-primary">Add to Google Calendar</span>';
+  a1.className = 'btn btn-primary';
+  a1.textContent = 'Add to Google Calendar';
 
   const a2 = document.createElement('a');
   a2.href = icsUrl;
   a2.download = 'date-with-nathan.ics';
-  a2.innerHTML = '<span class="btn btn-gold">Download calendar invite (.ics)</span>';
+  a2.className = 'btn btn-gold';
+  a2.textContent = 'Download calendar invite (.ics)';
 
   wrap.appendChild(a1);
   wrap.appendChild(a2);
