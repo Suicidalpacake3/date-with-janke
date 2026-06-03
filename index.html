@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="af">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>For Janke 🤍</title>
+<title>Vir Janke 🤍</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
@@ -549,13 +549,13 @@
 <section class="page active" id="page1">
   <div class="card">
     <div class="flourish">&#10086;</div>
-    <p class="eyebrow">A little question, from Nathan</p>
-    <h1>Will you go on a date<br>with me, <span class="name">Janke</span>?</h1>
-    <p class="subtitle">I&rsquo;ve been thinking&hellip; the best part of any day is the part I get to spend with you. So &mdash; would you let me take you out?</p>
+    <p class="eyebrow">&rsquo;n Klein vragie, van Nathan af</p>
+    <h1>Wil jy op &rsquo;n date<br>gaan met my, <span class="name">Janke</span>?</h1>
+    <p class="subtitle">Ek dink al &rsquo;n ruk hieroor&hellip; die beste deel van enige dag is die deel wat ek saam met jou kry. So &mdash; sal jy my laat jou uitvat? &#129402;</p>
 
     <div class="choice" id="choice">
-      <button class="btn btn-primary" id="yesBtn">Yes, I&rsquo;d love to</button>
-      <button class="btn" id="noBtn">No</button>
+      <button class="btn btn-primary" id="yesBtn">Ja, ek love die idee</button>
+      <button class="btn" id="noBtn">Nee</button>
     </div>
 
     <p class="ps" id="ps"></p>
@@ -566,66 +566,66 @@
 <section class="page" id="page2">
   <div class="card">
     <div class="flourish">&#10086;</div>
-    <p class="eyebrow">She said yes &mdash; now the fun part</p>
-    <h1 style="font-size:clamp(1.8rem,5vw,2.6rem);">Let&rsquo;s plan our date</h1>
-    <p class="subtitle">Pick a day, a time, and what you&rsquo;re in the mood for. The rest is up to me.</p>
+    <p class="eyebrow">Sy het ja gesê &mdash; nou die lekker deel</p>
+    <h1 style="font-size:clamp(1.8rem,5vw,2.6rem);">Kom ons plan ons date</h1>
+    <p class="subtitle">Kies &rsquo;n dag, &rsquo;n tyd, en waarvoor jy lus is. Die res los maar vir my. &#10084;</p>
 
     <form id="dateForm" novalidate>
       <div class="two-col">
         <div class="field" id="dateField">
-          <label>Which day?</label>
+          <label>Watter dag?</label>
           <div class="input-wrap picker">
             <span class="ic">&#128197;</span>
-            <button type="button" class="picker-trigger placeholder" id="dateTrigger" aria-haspopup="dialog" aria-expanded="false">Pick a day&hellip;</button>
-            <div class="pop" id="datePop" role="dialog" aria-label="Choose a date"></div>
+            <button type="button" class="picker-trigger placeholder" id="dateTrigger" aria-haspopup="dialog" aria-expanded="false">Kies &rsquo;n dag&hellip;</button>
+            <div class="pop" id="datePop" role="dialog" aria-label="Kies &rsquo;n datum"></div>
           </div>
           <input type="hidden" id="dateInput" />
         </div>
         <div class="field" id="timeField">
-          <label>What time?</label>
+          <label>Hoe laat?</label>
           <div class="input-wrap picker clock">
             <span class="ic">&#128336;</span>
-            <button type="button" class="picker-trigger placeholder" id="timeTrigger" aria-haspopup="dialog" aria-expanded="false">Pick a time&hellip;</button>
-            <div class="pop time-pop align-right" id="timePop" role="dialog" aria-label="Choose a time"></div>
+            <button type="button" class="picker-trigger placeholder" id="timeTrigger" aria-haspopup="dialog" aria-expanded="false">Kies &rsquo;n tyd&hellip;</button>
+            <div class="pop time-pop align-right" id="timePop" role="dialog" aria-label="Kies &rsquo;n tyd"></div>
           </div>
           <input type="hidden" id="timeInput" />
         </div>
       </div>
 
       <div class="field" id="typeField">
-        <label>What kind of date? <span class="hint">&mdash; pick your favourite</span></label>
+        <label>Watse soort date? <span class="hint">&mdash; kies jou gunsteling</span></label>
         <div class="input-wrap picker">
           <span class="ic">&#10084;</span>
-          <button type="button" class="picker-trigger placeholder" id="typeTrigger" aria-haspopup="listbox" aria-expanded="false">Choose something lovely&hellip;</button>
-          <div class="pop opt-pop" id="typePop" role="listbox" aria-label="Kind of date"></div>
+          <button type="button" class="picker-trigger placeholder" id="typeTrigger" aria-haspopup="listbox" aria-expanded="false">Kies iets lekkers&hellip;</button>
+          <div class="pop opt-pop" id="typePop" role="listbox" aria-label="Watse soort date"></div>
         </div>
         <input type="hidden" id="dateType" />
         <div class="error" id="typeError"></div>
       </div>
 
       <div class="field">
-        <label>Any little extras? <span class="hint">&mdash; optional, tick what sounds nice</span></label>
+        <label>Enige klein ekstras? <span class="hint">&mdash; opsioneel, tick wat lekker klink</span></label>
         <fieldset>
           <div class="checks">
-            <label class="check"><input type="checkbox" value="Flowers" /> Bring you flowers &#128144;</label>
-            <label class="check"><input type="checkbox" value="Dessert afterwards" /> Dessert afterwards &#127856;</label>
-            <label class="check"><input type="checkbox" value="A playlist for the drive" /> A playlist for the drive &#127925;</label>
-            <label class="check"><input type="checkbox" value="Surprise me" /> Surprise me &#10024;</label>
-            <label class="check"><input type="checkbox" value="Dress fancy" /> Let&rsquo;s dress fancy &#128087;</label>
-            <label class="check"><input type="checkbox" value="Keep it casual" /> Keep it casual &#129752;</label>
+            <label class="check"><input type="checkbox" value="Blomme saambring" /> Bring blommetjies &#128144;</label>
+            <label class="check"><input type="checkbox" value="Dessert agterna" /> Dessert agterna &#127856;</label>
+            <label class="check"><input type="checkbox" value="’n Playlist vir die rit" /> &rsquo;n Playlist vir die rit &#127925;</label>
+            <label class="check"><input type="checkbox" value="Verras my" /> Verras my &#10024;</label>
+            <label class="check"><input type="checkbox" value="Kom ons dress fancy" /> Kom ons dress fancy &#128087;</label>
+            <label class="check"><input type="checkbox" value="Hou dit chill" /> Hou dit chill &#129752;</label>
           </div>
         </fieldset>
       </div>
 
       <div class="field">
-        <label for="note">A note for me <span class="hint">&mdash; optional</span></label>
+        <label for="note">&rsquo;n Boodskappie vir my <span class="hint">&mdash; opsioneel</span></label>
         <div class="input-wrap">
-          <textarea id="note" placeholder="Anything you want to add&hellip;"></textarea>
+          <textarea id="note" placeholder="Enigiets wat jy wil byvoeg&hellip;"></textarea>
         </div>
       </div>
 
       <div class="center">
-        <button type="submit" class="btn btn-gold">Confirm our date</button>
+        <button type="submit" class="btn btn-gold">Confirm ons date</button>
       </div>
     </form>
   </div>
@@ -635,9 +635,9 @@
 <section class="page" id="page3">
   <div class="card">
     <div class="confirm-mark">&#10003;</div>
-    <p class="eyebrow">It&rsquo;s a date</p>
-    <h1 style="font-size:clamp(1.9rem,5.5vw,2.8rem);">Our date is confirmed &#127881;</h1>
-    <p class="subtitle">Thank you for saying yes, Janke. I genuinely can&rsquo;t wait to spend this time with you &mdash; consider it the highlight of my week already.</p>
+    <p class="eyebrow">Dis &rsquo;n date</p>
+    <h1 style="font-size:clamp(1.9rem,5.5vw,2.8rem);">Ons date is confirmed &#127881;</h1>
+    <p class="subtitle">Dankie dat jy ja gesê het, Janke. Ek kan eerlik nie wag om hierdie tyd saam met jou te spandeer nie &mdash; dis klaar die highlight van my week. &#129505;</p>
 
     <div class="summary" id="summary"></div>
 
@@ -645,7 +645,7 @@
 
     <div class="cal-links" id="calLinks"></div>
 
-    <p class="footnote">With all my heart &mdash; Nathan &#10086;</p>
+    <p class="footnote">Met my hele hart &mdash; Nathan &#10086;</p>
   </div>
 </section>
 
@@ -680,11 +680,11 @@ const choice = document.getElementById('choice');
 const ps     = document.getElementById('ps');
 
 const teases = [
-  "Are you sure? Try the other one \u2764",
-  "Hmm, that button is feeling shy\u2026",
-  "It keeps running away \u2014 maybe it's a sign \u2728",
-  "Okay it really doesn't want you to say no \ud83d\ude0a",
-  "You can't catch it. Yes is right there \u2192",
+  "Is jy seker? Probeer die ander een \u2764",
+  "Hmm, daai knoppie is bietjie shy\u2026",
+  "Hy hardloop net weg \u2014 dalk is dit \u2019n sign \u2728",
+  "Okay hy wil regtig nie hê jy moet nee sê nie \ud83d\ude0a",
+  "Jy gaan hom nie vang nie. Ja is reg hier \u2192",
 ];
 let teaseIdx = 0;
 
@@ -842,9 +842,10 @@ document.getElementById('yesBtn').addEventListener('click', () => {
    so the existing submit logic keeps working unchanged.
    ===================================================== */
 (function setupPickers() {
-  const MONTHS = ['January','February','March','April','May','June',
-                  'July','August','September','October','November','December'];
-  const DOW = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  const MONTHS = ['Januarie','Februarie','Maart','April','Mei','Junie',
+                  'Julie','Augustus','September','Oktober','November','Desember'];
+  const DOW = ['So','Ma','Di','Wo','Do','Vr','Sa'];
+  const DOW_FULL = ['Sondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrydag','Saterdag'];
 
   const dateInput = document.getElementById('dateInput');
   const timeInput = document.getElementById('timeInput');
@@ -953,8 +954,8 @@ document.getElementById('yesBtn').addEventListener('click', () => {
       selectedDate = new Date(viewYear, viewMonth, d);
       selectedDate.setHours(0,0,0,0);
       dateInput.value = viewYear + '-' + pad(viewMonth + 1) + '-' + pad(d);
-      const label = selectedDate.toLocaleDateString(undefined,
-        { weekday:'short', day:'numeric', month:'long', year:'numeric' });
+      const label = DOW_FULL[selectedDate.getDay()] + ', ' + d + ' ' +
+                    MONTHS[viewMonth] + ' ' + viewYear;
       dateTrigger.textContent = label;
       dateTrigger.classList.remove('placeholder');
       renderCalendar();
@@ -982,22 +983,23 @@ document.getElementById('yesBtn').addEventListener('click', () => {
       mins += '<div class="time-opt' + (selMin === m ? ' sel' : '') +
               '" data-min="' + m + '">' + pad(m) + '</div>';
     }
+    const ampmLabel = selAm === 'PM' ? 'nm' : 'vm';
     const disp = (selHour !== null && selMin !== null)
-      ? selHour + ':' + pad(selMin) + ' ' + selAm
+      ? selHour + ':' + pad(selMin) + ' ' + ampmLabel
       : '--:-- --';
 
     timePop.innerHTML =
       '<div class="time-display">' + disp + '</div>' +
-      '<div class="time-sub">tap hour, minute & AM/PM</div>' +
+      '<div class="time-sub">tik uur, minuut & vm/nm</div>' +
       '<div class="time-cols">' +
-        '<div class="time-col"><h4>Hour</h4><div class="time-scroll">' + hours + '</div></div>' +
+        '<div class="time-col"><h4>Uur</h4><div class="time-scroll">' + hours + '</div></div>' +
         '<div class="time-col"><h4>Min</h4><div class="time-scroll">' + mins + '</div></div>' +
       '</div>' +
       '<div class="ampm-row">' +
-        '<div class="time-opt' + (selAm === 'AM' ? ' sel' : '') + '" data-ampm="AM">AM</div>' +
-        '<div class="time-opt' + (selAm === 'PM' ? ' sel' : '') + '" data-ampm="PM">PM</div>' +
+        '<div class="time-opt' + (selAm === 'AM' ? ' sel' : '') + '" data-ampm="AM">vm</div>' +
+        '<div class="time-opt' + (selAm === 'PM' ? ' sel' : '') + '" data-ampm="PM">nm</div>' +
       '</div>' +
-      '<button type="button" class="time-done">Done</button>';
+      '<button type="button" class="time-done">Klaar</button>';
   }
 
   function commitTime() {
@@ -1006,7 +1008,7 @@ document.getElementById('yesBtn').addEventListener('click', () => {
     let h24 = selHour % 12;
     if (selAm === 'PM') h24 += 12;
     timeInput.value = pad(h24) + ':' + pad(selMin);
-    timeTrigger.textContent = selHour + ':' + pad(selMin) + ' ' + selAm;
+    timeTrigger.textContent = selHour + ':' + pad(selMin) + ' ' + (selAm === 'PM' ? 'nm' : 'vm');
     timeTrigger.classList.remove('placeholder');
     return true;
   }
@@ -1031,16 +1033,16 @@ document.getElementById('yesBtn').addEventListener('click', () => {
   const DATE_OPTIONS = [
     { v:'Sushi date', e:'\uD83C\uDF63' },
     { v:'Pizza date', e:'\uD83C\uDF55' },
-    { v:'Botanical Gardens picnic date', e:'\uD83C\uDF3F' },
+    { v:'Botanical Gardens piekniek date', e:'\uD83C\uDF3F' },
     { v:'Pikkewyn Street Lookout Point', e:'\uD83C\uDF07' },
-    { v:'Hiking date', e:'\u26F0\uFE0F' },
-    { v:'Coffee & bookshop wander', e:'\u2615' },
-    { v:'Cosy movie night', e:'\uD83C\uDFAC' },
-    { v:'Union Buildings gardens stroll', e:'\uD83C\uDF3C' },
+    { v:'Gaan stap / hike date', e:'\u26F0\uFE0F' },
+    { v:'Koffie & bookshop dwaal', e:'\u2615' },
+    { v:'Gesellige movie night', e:'\uD83C\uDFAC' },
+    { v:'Union Buildings tuine stappie', e:'\uD83C\uDF3C' },
     { v:'Mini-golf & milkshakes', e:'\u26F3' },
-    { v:'Art gallery afternoon', e:'\uD83C\uDFA8' },
-    { v:'Ice-cream & a slow stroll', e:'\uD83C\uDF66' },
-    { v:'Home-cooked dinner in', e:'\uD83C\uDF7D\uFE0F' },
+    { v:'Art gallery middag', e:'\uD83C\uDFA8' },
+    { v:'Roomys & \u2019n stadige stappie', e:'\uD83C\uDF66' },
+    { v:'Tuisgemaakte dinner by die huis', e:'\uD83C\uDF7D\uFE0F' },
   ];
 
   function renderOptions() {
@@ -1084,11 +1086,11 @@ form.addEventListener('submit', async (e) => {
   typeErr.textContent = '';
 
   if (!dateVal || !timeVal) {
-    typeErr.textContent = 'Please pick both a day and a time \u2764';
+    typeErr.textContent = 'Kies asseblief \u2019n dag én \u2019n tyd \u2764';
     return;
   }
   if (!typeVal) {
-    typeErr.textContent = 'Pick what kind of date you fancy \u2764';
+    typeErr.textContent = 'Kies watse soort date jy lus is vir \u2764';
     return;
   }
 
@@ -1099,8 +1101,8 @@ form.addEventListener('submit', async (e) => {
     date: dateVal,
     time: timeVal,
     dateType: typeVal,
-    extras: extras.length ? extras.join(', ') : 'None',
-    note: note || 'None',
+    extras: extras.length ? extras.join(', ') : 'Niks',
+    note: note || 'Niks',
   };
 
   // ---- render confirmation summary ----
@@ -1115,24 +1117,29 @@ form.addEventListener('submit', async (e) => {
    PAGE 3 — summary, email, calendar
    ===================================================== */
 function prettyDate(dateStr, timeStr) {
+  const DAYS = ['Sondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrydag','Saterdag'];
+  const MNTHS = ['Januarie','Februarie','Maart','April','Mei','Junie',
+                 'Julie','Augustus','September','Oktober','November','Desember'];
   const dt = new Date(dateStr + 'T' + timeStr);
-  const dOpts = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-  const tOpts = { hour: 'numeric', minute: '2-digit' };
-  return {
-    nice: dt.toLocaleDateString(undefined, dOpts),
-    time: dt.toLocaleTimeString(undefined, tOpts),
-    dateObj: dt,
-  };
+  const niceDate = DAYS[dt.getDay()] + ', ' + dt.getDate() + ' ' +
+                   MNTHS[dt.getMonth()] + ' ' + dt.getFullYear();
+  // 12-hour time with vm/nm
+  let h = dt.getHours();
+  const m = dt.getMinutes();
+  const ampm = h >= 12 ? 'nm' : 'vm';
+  let h12 = h % 12; if (h12 === 0) h12 = 12;
+  const niceTime = h12 + ':' + String(m).padStart(2, '0') + ' ' + ampm;
+  return { nice: niceDate, time: niceTime, dateObj: dt };
 }
 
 function renderConfirmation(data) {
   const p = prettyDate(data.date, data.time);
   const sum = document.getElementById('summary');
   sum.innerHTML =
-    '<span class="val"><strong>When</strong>' + p.nice + ' &middot; ' + p.time + '</span>' +
-    '<span class="val"><strong>What</strong>' + escapeHtml(data.dateType) + '</span>' +
-    '<span class="val"><strong>Little extras</strong>' + escapeHtml(data.extras) + '</span>' +
-    (data.note !== 'None' ? '<span class="val"><strong>Your note</strong>' + escapeHtml(data.note) + '</span>' : '');
+    '<span class="val"><strong>Wanneer</strong>' + p.nice + ' &middot; ' + p.time + '</span>' +
+    '<span class="val"><strong>Wat</strong>' + escapeHtml(data.dateType) + '</span>' +
+    '<span class="val"><strong>Klein ekstras</strong>' + escapeHtml(data.extras) + '</span>' +
+    (data.note !== 'Niks' ? '<span class="val"><strong>Jou boodskappie</strong>' + escapeHtml(data.note) + '</span>' : '');
 
   buildCalendarLinks(data, p);
 }
@@ -1143,24 +1150,24 @@ function escapeHtml(s) {
 
 function sendEmail(data) {
   const sending = document.getElementById('sending');
-  sending.textContent = 'Letting Nathan know\u2026';
+  sending.textContent = 'Laat weet vir Nathan\u2026';
 
   const p = prettyDate(data.date, data.time);
   const payload = {
-    _subject: 'Janke said YES — our date is on! 🤍',
-    Who: 'Janke',
-    When: p.nice + ' at ' + p.time,
-    Date_raw: data.date,
-    Time_raw: data.time,
-    Date_type: data.dateType,
-    Extras: data.extras,
-    Note: data.note,
+    _subject: 'Janke het JA gesê — ons date is on! 🤍',
+    Wie: 'Janke',
+    Wanneer: p.nice + ' om ' + p.time,
+    Datum_raw: data.date,
+    Tyd_raw: data.time,
+    Soort_date: data.dateType,
+    Ekstras: data.extras,
+    Boodskap: data.note,
     message:
-      'Janke confirmed the date!\n\n' +
-      'When: ' + p.nice + ' at ' + p.time + '\n' +
-      'What: ' + data.dateType + '\n' +
-      'Extras: ' + data.extras + '\n' +
-      'Note: ' + data.note,
+      'Janke het die date confirm! \uD83C\uDF89\n\n' +
+      'Wanneer: ' + p.nice + ' om ' + p.time + '\n' +
+      'Wat: ' + data.dateType + '\n' +
+      'Ekstras: ' + data.extras + '\n' +
+      'Boodskap: ' + data.note,
   };
 
   fetch(FORMSPREE_ENDPOINT, {
@@ -1170,13 +1177,13 @@ function sendEmail(data) {
   })
   .then(r => {
     if (r.ok) {
-      sending.textContent = 'Nathan has been notified \u2713  Add it to your calendar below \u2193';
+      sending.textContent = 'Nathan weet nou \u2713  Voeg dit by jou kalender hieronder \u2193';
     } else {
-      sending.textContent = 'Add our date to your calendar below \u2193';
+      sending.textContent = 'Voeg ons date by jou kalender hieronder \u2193';
     }
   })
   .catch(() => {
-    sending.textContent = 'Add our date to your calendar below \u2193';
+    sending.textContent = 'Voeg ons date by jou kalender hieronder \u2193';
   });
 }
 
@@ -1193,10 +1200,10 @@ function buildCalendarLinks(data, p) {
     pad(d.getUTCSeconds()) + 'Z';
   function pad(n) { return String(n).padStart(2, '0'); }
 
-  const title = 'Date with Janke \u2014 ' + data.dateType;
-  const detailParts = ['Our ' + data.dateType + '.'];
-  if (data.extras !== 'None') detailParts.push('Extras: ' + data.extras);
-  if (data.note   !== 'None') detailParts.push("Janke's note: " + data.note);
+  const title = 'Date met Janke \u2014 ' + data.dateType;
+  const detailParts = ['Ons ' + data.dateType + '.'];
+  if (data.extras !== 'Niks') detailParts.push('Ekstras: ' + data.extras);
+  if (data.note   !== 'Niks') detailParts.push("Janke se boodskap: " + data.note);
   const detailsPlain = detailParts.join('\n');   // for Google (real newlines)
   const detailsIcs   = detailParts.join('\\n');  // for .ics (escaped newlines)
 
@@ -1211,7 +1218,7 @@ function buildCalendarLinks(data, p) {
   const ics = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Nathan//Date with Janke//EN',
+    'PRODID:-//Nathan//Date met Janke//AF',
     'CALSCALE:GREGORIAN',
     'BEGIN:VEVENT',
     'UID:' + Date.now() + '@nathan-janke-date',
@@ -1235,13 +1242,13 @@ function buildCalendarLinks(data, p) {
   a1.target = '_blank';
   a1.rel = 'noopener';
   a1.className = 'btn btn-primary';
-  a1.textContent = 'Add to Google Calendar';
+  a1.textContent = 'Voeg by Google Calendar';
 
   const a2 = document.createElement('a');
   a2.href = icsUrl;
-  a2.download = 'date-with-nathan.ics';
+  a2.download = 'date-met-nathan.ics';
   a2.className = 'btn btn-gold';
-  a2.textContent = 'Download calendar invite (.ics)';
+  a2.textContent = 'Laai kalender-invite af (.ics)';
 
   wrap.appendChild(a1);
   wrap.appendChild(a2);
