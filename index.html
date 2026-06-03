@@ -213,6 +213,47 @@
   }
   .hint { text-transform: none; letter-spacing: 0; font-size: 12px; color: var(--gold-deep); font-weight: 400; }
 
+  /* shared field surface — soft gradient, gold edge, inner glow */
+  .input-wrap {
+    position: relative;
+    border-radius: 16px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,250,246,0.96));
+    border: 1px solid var(--gold-light);
+    box-shadow:
+      0 6px 16px -10px rgba(94,31,35,0.25),
+      0 1px 0 rgba(255,255,255,0.8) inset;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+  }
+  .input-wrap::before {
+    /* faint gold inner frame to echo the card */
+    content: "";
+    position: absolute;
+    inset: 4px;
+    border: 1px solid rgba(200,162,92,0.30);
+    border-radius: 12px;
+    pointer-events: none;
+  }
+  .input-wrap:hover { border-color: var(--gold); transform: translateY(-1px); }
+  .input-wrap:focus-within {
+    border-color: var(--rose);
+    box-shadow:
+      0 0 0 4px rgba(199,95,87,0.16),
+      0 8px 20px -10px rgba(158,61,58,0.35),
+      0 1px 0 rgba(255,255,255,0.8) inset;
+  }
+  /* decorative leading icon inside each field */
+  .input-wrap .ic {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 17px;
+    pointer-events: none;
+    opacity: 0.85;
+    z-index: 2;
+  }
+
   input[type="date"],
   input[type="time"],
   select,
@@ -221,18 +262,71 @@
     font-family: 'Jost', sans-serif;
     font-size: 1rem;
     color: var(--ink);
-    background: var(--cream);
-    border: 1px solid var(--blush-deep);
-    border-radius: 14px;
-    padding: 14px 16px;
-    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    background: transparent;
+    border: none;
+    border-radius: 16px;
+    padding: 15px 16px 15px 44px;   /* room for the leading icon */
+    position: relative;
+    z-index: 1;
+    -webkit-appearance: none;
+    appearance: none;
   }
-  input:focus, select:focus, textarea:focus {
-    outline: none;
-    border-color: var(--rose);
-    box-shadow: 0 0 0 4px rgba(199,95,87,0.15);
+  input:focus, select:focus, textarea:focus { outline: none; }
+  input::placeholder, textarea::placeholder { color: var(--gold-deep); opacity: 0.7; }
+
+  /* date & time: recolour and enlarge the native picker indicator */
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0;            /* hide default, we show our own chevron via .input-wrap.picker */
+    position: absolute;
+    right: 0; top: 0;
+    width: 100%; height: 100%;
+    margin: 0;
   }
-  textarea { resize: vertical; min-height: 78px; }
+  /* tidy the inner spin/field text colour on WebKit */
+  input[type="date"]::-webkit-datetime-edit,
+  input[type="time"]::-webkit-datetime-edit { color: var(--ink); padding: 0; }
+  input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+  input[type="time"]::-webkit-datetime-edit-fields-wrapper { padding: 0; }
+  input[type="date"]::-webkit-inner-spin-button,
+  input[type="time"]::-webkit-inner-spin-button { display: none; }
+  input[type="date"]::-webkit-datetime-edit-text { color: var(--gold-deep); padding: 0 2px; }
+
+  /* a custom chevron / glyph on the right for date, time, select */
+  .input-wrap.picker::after {
+    content: "";
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    width: 10px; height: 10px;
+    border-right: 2px solid var(--gold-deep);
+    border-bottom: 2px solid var(--gold-deep);
+    transform: translateY(-65%) rotate(45deg);
+    pointer-events: none;
+    z-index: 2;
+    transition: transform 0.25s ease;
+  }
+  .input-wrap.picker:focus-within::after { transform: translateY(-35%) rotate(225deg); }
+  .input-wrap.picker.clock::after {
+    /* a little clock dot instead of chevron for the time field */
+    content: "\25CF";
+    border: none;
+    width: auto; height: auto;
+    color: var(--gold-deep);
+    font-size: 9px;
+    transform: translateY(-50%);
+  }
+  select { padding-right: 40px; cursor: pointer; }
+  select option { color: var(--ink); background: var(--cream); }
+
+  textarea {
+    padding-left: 16px;            /* note field has no leading icon */
+    resize: vertical;
+    min-height: 84px;
+    line-height: 1.5;
+  }
+
   .two-col { display: flex; gap: 16px; }
   .two-col .field { flex: 1; }
 
@@ -240,15 +334,20 @@
   .checks { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .check {
     display: flex; align-items: center; gap: 9px;
-    background: var(--cream);
-    border: 1px solid var(--blush-deep);
-    border-radius: 12px;
-    padding: 11px 13px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,250,246,0.95));
+    border: 1px solid var(--gold-light);
+    border-radius: 13px;
+    padding: 12px 13px;
     font-size: 0.94rem;
     cursor: pointer;
-    transition: border-color 0.2s ease, background 0.2s ease;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.7) inset;
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   }
-  .check:hover { border-color: var(--gold); }
+  .check:hover { border-color: var(--gold); transform: translateY(-1px); box-shadow: 0 6px 14px -10px rgba(160,125,59,0.5); }
+  .check:has(input:checked) {
+    border-color: var(--rose);
+    background: linear-gradient(180deg, rgba(247,227,223,0.9), rgba(255,250,246,0.95));
+  }
   .check input { accent-color: var(--rose); width: 17px; height: 17px; cursor: pointer; }
 
   .error { color: var(--rose-deep); font-size: 0.88rem; margin-top: 6px; min-height: 1em; }
@@ -343,17 +442,25 @@
       <div class="two-col">
         <div class="field">
           <label for="dateInput">Which day?</label>
-          <input type="date" id="dateInput" required />
+          <div class="input-wrap picker">
+            <span class="ic">&#128197;</span>
+            <input type="date" id="dateInput" required />
+          </div>
         </div>
         <div class="field">
           <label for="timeInput">What time?</label>
-          <input type="time" id="timeInput" required />
+          <div class="input-wrap picker clock">
+            <span class="ic">&#128336;</span>
+            <input type="time" id="timeInput" required />
+          </div>
         </div>
       </div>
 
       <div class="field">
         <label for="dateType">What kind of date? <span class="hint">&mdash; pick your favourite</span></label>
-        <select id="dateType" required>
+        <div class="input-wrap picker">
+          <span class="ic">&#10084;</span>
+          <select id="dateType" required>
           <option value="" disabled selected>Choose something lovely&hellip;</option>
           <option value="Sushi date">Sushi date &#127843;</option>
           <option value="Pizza date">Pizza date &#127829;</option>
@@ -368,6 +475,7 @@
           <option value="Ice-cream & a slow stroll">Ice-cream &amp; a slow stroll &#127846;</option>
           <option value="Home-cooked dinner in">Home-cooked dinner in &#127869;&#65039;</option>
         </select>
+        </div>
         <div class="error" id="typeError"></div>
       </div>
 
@@ -387,7 +495,9 @@
 
       <div class="field">
         <label for="note">A note for me <span class="hint">&mdash; optional</span></label>
-        <textarea id="note" placeholder="Anything you want to add&hellip;"></textarea>
+        <div class="input-wrap">
+          <textarea id="note" placeholder="Anything you want to add&hellip;"></textarea>
+        </div>
       </div>
 
       <div class="center">
