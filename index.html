@@ -254,9 +254,6 @@
     z-index: 2;
   }
 
-  input[type="date"],
-  input[type="time"],
-  select,
   textarea {
     width: 100%;
     font-family: 'Jost', sans-serif;
@@ -265,33 +262,14 @@
     background: transparent;
     border: none;
     border-radius: 16px;
-    padding: 15px 16px 15px 44px;   /* room for the leading icon */
+    padding: 15px 16px;
     position: relative;
     z-index: 1;
     -webkit-appearance: none;
     appearance: none;
   }
-  input:focus, select:focus, textarea:focus { outline: none; }
-  input::placeholder, textarea::placeholder { color: var(--gold-deep); opacity: 0.7; }
-
-  /* date & time: recolour and enlarge the native picker indicator */
-  input[type="date"]::-webkit-calendar-picker-indicator,
-  input[type="time"]::-webkit-calendar-picker-indicator {
-    cursor: pointer;
-    opacity: 0;            /* hide default, we show our own chevron via .input-wrap.picker */
-    position: absolute;
-    right: 0; top: 0;
-    width: 100%; height: 100%;
-    margin: 0;
-  }
-  /* tidy the inner spin/field text colour on WebKit */
-  input[type="date"]::-webkit-datetime-edit,
-  input[type="time"]::-webkit-datetime-edit { color: var(--ink); padding: 0; }
-  input[type="date"]::-webkit-datetime-edit-fields-wrapper,
-  input[type="time"]::-webkit-datetime-edit-fields-wrapper { padding: 0; }
-  input[type="date"]::-webkit-inner-spin-button,
-  input[type="time"]::-webkit-inner-spin-button { display: none; }
-  input[type="date"]::-webkit-datetime-edit-text { color: var(--gold-deep); padding: 0 2px; }
+  textarea:focus { outline: none; }
+  textarea::placeholder { color: var(--gold-deep); opacity: 0.7; }
 
   /* a custom chevron / glyph on the right for date, time, select */
   .input-wrap.picker::after {
@@ -307,7 +285,8 @@
     z-index: 2;
     transition: transform 0.25s ease;
   }
-  .input-wrap.picker:focus-within::after { transform: translateY(-35%) rotate(225deg); }
+  .input-wrap.picker:focus-within::after,
+  .open-field .input-wrap.picker::after { transform: translateY(-35%) rotate(225deg); }
   .input-wrap.picker.clock::after {
     /* a little clock dot instead of chevron for the time field */
     content: "\25CF";
@@ -317,8 +296,7 @@
     font-size: 9px;
     transform: translateY(-50%);
   }
-  select { padding-right: 40px; cursor: pointer; }
-  select option { color: var(--ink); background: var(--cream); }
+  .open-field .input-wrap.picker.clock::after { transform: translateY(-50%); }
 
   textarea {
     padding-left: 16px;            /* note field has no leading icon */
@@ -349,6 +327,160 @@
     background: linear-gradient(180deg, rgba(247,227,223,0.9), rgba(255,250,246,0.95));
   }
   .check input { accent-color: var(--rose); width: 17px; height: 17px; cursor: pointer; }
+
+  /* ========== custom pickers (calendar / clock / options) ========== */
+  /* trigger button that looks identical to the old field surface */
+  .picker-trigger {
+    width: 100%;
+    text-align: left;
+    font-family: 'Jost', sans-serif;
+    font-size: 1rem;
+    color: var(--ink);
+    background: transparent;
+    border: none;
+    border-radius: 16px;
+    padding: 15px 40px 15px 44px;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+  }
+  .picker-trigger.placeholder { color: var(--gold-deep); opacity: 0.8; }
+
+  /* popup shell shared by all three */
+  .pop {
+    position: absolute;
+    z-index: 60;
+    top: calc(100% + 10px);
+    left: 0;
+    width: 100%;
+    min-width: 260px;
+    background: linear-gradient(168deg, var(--cream) 0%, #fff5ef 100%);
+    border: 1px solid var(--gold);
+    border-radius: 18px;
+    box-shadow: 0 24px 50px -18px var(--shadow), 0 2px 0 rgba(255,255,255,0.7) inset;
+    padding: 16px;
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+    pointer-events: none;
+    transition: opacity 0.22s ease, transform 0.22s ease;
+  }
+  .pop::before {
+    content: "";
+    position: absolute;
+    inset: 6px;
+    border: 1px solid rgba(200,162,92,0.3);
+    border-radius: 12px;
+    pointer-events: none;
+  }
+  .pop.open { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+  .pop.align-right { left: auto; right: 0; }
+  .field { position: relative; }            /* needed so z-index below applies */
+  .field.open-field { z-index: 70; }        /* lift active field above siblings */
+  .two-col { position: relative; }
+  .two-col:has(.open-field) { z-index: 70; } /* lift the row above later fields */
+
+  /* ----- calendar ----- */
+  .cal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px; padding: 0 4px;
+  }
+  .cal-title { font-family: 'Fraunces', serif; font-size: 1.05rem; color: var(--wine); font-weight: 500; }
+  .cal-nav {
+    border: 1px solid var(--gold-light);
+    background: rgba(255,255,255,0.7);
+    color: var(--rose-deep);
+    width: 32px; height: 32px; border-radius: 50%;
+    cursor: pointer; font-size: 15px; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  }
+  .cal-nav:hover { background: var(--blush); border-color: var(--gold); transform: scale(1.08); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+  .cal-dow {
+    text-align: center; font-size: 10px; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--gold-deep);
+    font-weight: 500; padding: 4px 0 6px;
+  }
+  .cal-day {
+    aspect-ratio: 1 / 1;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; color: var(--ink);
+    border-radius: 50%; cursor: pointer; border: 1px solid transparent;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    user-select: none;
+  }
+  .cal-day:hover { background: var(--blush); border-color: var(--gold-light); transform: scale(1.06); }
+  .cal-day.muted { color: rgba(67,34,31,0.28); cursor: default; }
+  .cal-day.muted:hover { background: transparent; border-color: transparent; transform: none; }
+  .cal-day.today { border-color: var(--gold); }
+  .cal-day.selected {
+    background: linear-gradient(135deg, var(--rose), var(--rose-deep));
+    color: var(--cream); border-color: var(--rose-deep);
+    box-shadow: 0 6px 14px -6px rgba(158,61,58,0.6);
+  }
+  .cal-day.disabled { color: rgba(67,34,31,0.2); cursor: default; }
+  .cal-day.disabled:hover { background: transparent; border-color: transparent; transform: none; }
+
+  /* ----- clock / time ----- */
+  .time-pop { width: 100%; min-width: 250px; }
+  .time-display {
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-size: 2rem;
+    color: var(--wine);
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+  }
+  .time-sub { text-align: center; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--gold-deep); margin-bottom: 14px; }
+  .time-cols { display: flex; gap: 10px; align-items: stretch; justify-content: center; }
+  .time-col { flex: 1; }
+  .time-col h4 {
+    text-align: center; font-family: 'Jost', sans-serif; font-weight: 500;
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--rose); margin-bottom: 6px;
+  }
+  .time-scroll {
+    max-height: 180px; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 4px;
+    padding: 2px; scrollbar-width: thin; scrollbar-color: var(--gold) transparent;
+  }
+  .time-scroll::-webkit-scrollbar { width: 6px; }
+  .time-scroll::-webkit-scrollbar-thumb { background: var(--gold-light); border-radius: 3px; }
+  .time-opt {
+    text-align: center; padding: 8px 6px; border-radius: 10px;
+    font-size: 0.92rem; color: var(--ink); cursor: pointer;
+    border: 1px solid transparent; transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+  .time-opt:hover { background: var(--blush); border-color: var(--gold-light); }
+  .time-opt.sel {
+    background: linear-gradient(135deg, var(--rose), var(--rose-deep));
+    color: var(--cream); border-color: var(--rose-deep);
+  }
+  .ampm-row { display: flex; gap: 8px; margin-top: 6px; }
+  .ampm-row .time-opt { flex: 1; }
+  .time-done {
+    margin-top: 14px; width: 100%;
+    font-family: 'Jost', sans-serif; font-size: 0.9rem; letter-spacing: 1px;
+    border: none; border-radius: 999px; padding: 11px;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    color: var(--wine); cursor: pointer; transition: transform 0.2s ease;
+  }
+  .time-done:hover { transform: translateY(-2px); }
+
+  /* ----- custom options list (kind of date) ----- */
+  .opt-pop { max-height: 280px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--gold) transparent; }
+  .opt-pop::-webkit-scrollbar { width: 6px; }
+  .opt-pop::-webkit-scrollbar-thumb { background: var(--gold-light); border-radius: 3px; }
+  .opt-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 12px; border-radius: 11px;
+    font-size: 0.96rem; color: var(--ink); cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
+  }
+  .opt-item:hover { background: var(--blush); border-color: var(--gold-light); transform: translateX(2px); }
+  .opt-item.sel { background: linear-gradient(135deg, rgba(199,95,87,0.16), rgba(247,227,223,0.6)); border-color: var(--rose); }
+  .opt-item .emo { font-size: 1.15rem; width: 1.5em; text-align: center; }
 
   .error { color: var(--rose-deep); font-size: 0.88rem; margin-top: 6px; min-height: 1em; }
 
@@ -440,42 +572,34 @@
 
     <form id="dateForm" novalidate>
       <div class="two-col">
-        <div class="field">
-          <label for="dateInput">Which day?</label>
+        <div class="field" id="dateField">
+          <label>Which day?</label>
           <div class="input-wrap picker">
             <span class="ic">&#128197;</span>
-            <input type="date" id="dateInput" required />
+            <button type="button" class="picker-trigger placeholder" id="dateTrigger" aria-haspopup="dialog" aria-expanded="false">Pick a day&hellip;</button>
+            <div class="pop" id="datePop" role="dialog" aria-label="Choose a date"></div>
           </div>
+          <input type="hidden" id="dateInput" />
         </div>
-        <div class="field">
-          <label for="timeInput">What time?</label>
+        <div class="field" id="timeField">
+          <label>What time?</label>
           <div class="input-wrap picker clock">
             <span class="ic">&#128336;</span>
-            <input type="time" id="timeInput" required />
+            <button type="button" class="picker-trigger placeholder" id="timeTrigger" aria-haspopup="dialog" aria-expanded="false">Pick a time&hellip;</button>
+            <div class="pop time-pop align-right" id="timePop" role="dialog" aria-label="Choose a time"></div>
           </div>
+          <input type="hidden" id="timeInput" />
         </div>
       </div>
 
-      <div class="field">
-        <label for="dateType">What kind of date? <span class="hint">&mdash; pick your favourite</span></label>
+      <div class="field" id="typeField">
+        <label>What kind of date? <span class="hint">&mdash; pick your favourite</span></label>
         <div class="input-wrap picker">
           <span class="ic">&#10084;</span>
-          <select id="dateType" required>
-          <option value="" disabled selected>Choose something lovely&hellip;</option>
-          <option value="Sushi date">Sushi date &#127843;</option>
-          <option value="Pizza date">Pizza date &#127829;</option>
-          <option value="Botanical Gardens picnic date">Botanical Gardens picnic date &#127793;</option>
-          <option value="Pikkewyn Street Lookout Point">Pikkewyn Street Lookout Point &#127759;</option>
-          <option value="Hiking date">Hiking date &#9968;&#65039;</option>
-          <option value="Coffee & bookshop wander">Coffee &amp; bookshop wander &#9749;</option>
-          <option value="Cosy movie night">Cosy movie night &#127916;</option>
-          <option value="Union Buildings gardens stroll">Union Buildings gardens stroll &#127807;</option>
-          <option value="Mini-golf & milkshakes">Mini-golf &amp; milkshakes &#9971;</option>
-          <option value="Art gallery afternoon">Art gallery afternoon &#127912;</option>
-          <option value="Ice-cream & a slow stroll">Ice-cream &amp; a slow stroll &#127846;</option>
-          <option value="Home-cooked dinner in">Home-cooked dinner in &#127869;&#65039;</option>
-        </select>
+          <button type="button" class="picker-trigger placeholder" id="typeTrigger" aria-haspopup="listbox" aria-expanded="false">Choose something lovely&hellip;</button>
+          <div class="pop opt-pop" id="typePop" role="listbox" aria-label="Kind of date"></div>
         </div>
+        <input type="hidden" id="dateType" />
         <div class="error" id="typeError"></div>
       </div>
 
@@ -710,11 +834,240 @@ function showPage(id) {
 
 document.getElementById('yesBtn').addEventListener('click', () => {
   showPage('page2');
-  // sensible default: today's date
-  const d = new Date();
-  const iso = d.toISOString().split('T')[0];
-  document.getElementById('dateInput').min = iso;
 });
+
+/* =====================================================
+   PAGE 2 — custom themed pickers (calendar / clock / options)
+   These write to the hidden #dateInput, #timeInput, #dateType
+   so the existing submit logic keeps working unchanged.
+   ===================================================== */
+(function setupPickers() {
+  const MONTHS = ['January','February','March','April','May','June',
+                  'July','August','September','October','November','December'];
+  const DOW = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+  const dateInput = document.getElementById('dateInput');
+  const timeInput = document.getElementById('timeInput');
+  const typeInput = document.getElementById('dateType');
+
+  const dateTrigger = document.getElementById('dateTrigger');
+  const timeTrigger = document.getElementById('timeTrigger');
+  const typeTrigger = document.getElementById('typeTrigger');
+
+  const datePop = document.getElementById('datePop');
+  const timePop = document.getElementById('timePop');
+  const typePop = document.getElementById('typePop');
+
+  // ---------- open / close management ----------
+  function closeAll(except) {
+    [['datePop','dateField','dateTrigger'],
+     ['timePop','timeField','timeTrigger'],
+     ['typePop','typeField','typeTrigger']].forEach(([pop, field, trig]) => {
+      if (pop === except) return;
+      document.getElementById(pop).classList.remove('open');
+      document.getElementById(field).classList.remove('open-field');
+      document.getElementById(trig).setAttribute('aria-expanded', 'false');
+    });
+  }
+  function toggle(popEl, fieldId, trigEl) {
+    const isOpen = popEl.classList.contains('open');
+    closeAll(isOpen ? null : popEl.id);
+    if (isOpen) {
+      popEl.classList.remove('open');
+      document.getElementById(fieldId).classList.remove('open-field');
+      trigEl.setAttribute('aria-expanded', 'false');
+    } else {
+      popEl.classList.add('open');
+      document.getElementById(fieldId).classList.add('open-field');
+      trigEl.setAttribute('aria-expanded', 'true');
+    }
+  }
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#dateField') &&
+        !e.target.closest('#timeField') &&
+        !e.target.closest('#typeField')) {
+      closeAll(null);
+    }
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAll(null); });
+
+  /* ================= CALENDAR ================= */
+  const today = new Date(); today.setHours(0,0,0,0);
+  let viewYear = today.getFullYear();
+  let viewMonth = today.getMonth();
+  let selectedDate = null;   // a Date object
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+
+  function renderCalendar() {
+    const first = new Date(viewYear, viewMonth, 1);
+    const startDow = first.getDay();
+    const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+    const prevDays = new Date(viewYear, viewMonth, 0).getDate();
+
+    let html = '<div class="cal-head">' +
+      '<button type="button" class="cal-nav" data-nav="-1" aria-label="Previous month">&#8249;</button>' +
+      '<span class="cal-title">' + MONTHS[viewMonth] + ' ' + viewYear + '</span>' +
+      '<button type="button" class="cal-nav" data-nav="1" aria-label="Next month">&#8250;</button>' +
+      '</div><div class="cal-grid">';
+
+    DOW.forEach(d => html += '<div class="cal-dow">' + d + '</div>');
+
+    // leading days from previous month
+    for (let i = startDow - 1; i >= 0; i--) {
+      html += '<div class="cal-day muted">' + (prevDays - i) + '</div>';
+    }
+    // this month's days
+    for (let d = 1; d <= daysInMonth; d++) {
+      const cur = new Date(viewYear, viewMonth, d);
+      const cls = ['cal-day'];
+      if (cur < today) cls.push('disabled');
+      if (cur.getTime() === today.getTime()) cls.push('today');
+      if (selectedDate && cur.getTime() === selectedDate.getTime()) cls.push('selected');
+      const attr = cur < today ? '' : ' data-day="' + d + '"';
+      html += '<div class="' + cls.join(' ') + '"' + attr + '>' + d + '</div>';
+    }
+    // trailing days to fill the last row
+    const cellsSoFar = startDow + daysInMonth;
+    const trailing = (7 - (cellsSoFar % 7)) % 7;
+    for (let i = 1; i <= trailing; i++) {
+      html += '<div class="cal-day muted">' + i + '</div>';
+    }
+    html += '</div>';
+    datePop.innerHTML = html;
+  }
+
+  datePop.addEventListener('click', (e) => {
+    const nav = e.target.closest('[data-nav]');
+    if (nav) {
+      viewMonth += parseInt(nav.dataset.nav, 10);
+      if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+      if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+      renderCalendar();
+      return;
+    }
+    const day = e.target.closest('[data-day]');
+    if (day) {
+      const d = parseInt(day.dataset.day, 10);
+      selectedDate = new Date(viewYear, viewMonth, d);
+      selectedDate.setHours(0,0,0,0);
+      dateInput.value = viewYear + '-' + pad(viewMonth + 1) + '-' + pad(d);
+      const label = selectedDate.toLocaleDateString(undefined,
+        { weekday:'short', day:'numeric', month:'long', year:'numeric' });
+      dateTrigger.textContent = label;
+      dateTrigger.classList.remove('placeholder');
+      renderCalendar();
+      closeAll(null);
+    }
+  });
+
+  dateTrigger.addEventListener('click', () => {
+    if (selectedDate) { viewYear = selectedDate.getFullYear(); viewMonth = selectedDate.getMonth(); }
+    renderCalendar();
+    toggle(datePop, 'dateField', dateTrigger);
+  });
+
+  /* ================= CLOCK (12-hour + AM/PM) ================= */
+  let selHour = null, selMin = null, selAm = 'PM';
+
+  function renderTime() {
+    let hours = '';
+    for (let h = 1; h <= 12; h++) {
+      hours += '<div class="time-opt' + (selHour === h ? ' sel' : '') +
+               '" data-hour="' + h + '">' + h + '</div>';
+    }
+    let mins = '';
+    for (let m = 0; m < 60; m += 5) {
+      mins += '<div class="time-opt' + (selMin === m ? ' sel' : '') +
+              '" data-min="' + m + '">' + pad(m) + '</div>';
+    }
+    const disp = (selHour !== null && selMin !== null)
+      ? selHour + ':' + pad(selMin) + ' ' + selAm
+      : '--:-- --';
+
+    timePop.innerHTML =
+      '<div class="time-display">' + disp + '</div>' +
+      '<div class="time-sub">tap hour, minute & AM/PM</div>' +
+      '<div class="time-cols">' +
+        '<div class="time-col"><h4>Hour</h4><div class="time-scroll">' + hours + '</div></div>' +
+        '<div class="time-col"><h4>Min</h4><div class="time-scroll">' + mins + '</div></div>' +
+      '</div>' +
+      '<div class="ampm-row">' +
+        '<div class="time-opt' + (selAm === 'AM' ? ' sel' : '') + '" data-ampm="AM">AM</div>' +
+        '<div class="time-opt' + (selAm === 'PM' ? ' sel' : '') + '" data-ampm="PM">PM</div>' +
+      '</div>' +
+      '<button type="button" class="time-done">Done</button>';
+  }
+
+  function commitTime() {
+    if (selHour === null || selMin === null) return false;
+    // convert 12h -> 24h for the hidden input
+    let h24 = selHour % 12;
+    if (selAm === 'PM') h24 += 12;
+    timeInput.value = pad(h24) + ':' + pad(selMin);
+    timeTrigger.textContent = selHour + ':' + pad(selMin) + ' ' + selAm;
+    timeTrigger.classList.remove('placeholder');
+    return true;
+  }
+
+  timePop.addEventListener('click', (e) => {
+    const hEl = e.target.closest('[data-hour]');
+    const mEl = e.target.closest('[data-min]');
+    const aEl = e.target.closest('[data-ampm]');
+    const done = e.target.closest('.time-done');
+    if (hEl) { selHour = parseInt(hEl.dataset.hour, 10); renderTime(); commitTime(); return; }
+    if (mEl) { selMin  = parseInt(mEl.dataset.min, 10);  renderTime(); commitTime(); return; }
+    if (aEl) { selAm   = aEl.dataset.ampm;               renderTime(); commitTime(); return; }
+    if (done) { commitTime(); closeAll(null); }
+  });
+
+  timeTrigger.addEventListener('click', () => {
+    renderTime();
+    toggle(timePop, 'timeField', timeTrigger);
+  });
+
+  /* ================= OPTIONS (kind of date) ================= */
+  const DATE_OPTIONS = [
+    { v:'Sushi date', e:'\uD83C\uDF63' },
+    { v:'Pizza date', e:'\uD83C\uDF55' },
+    { v:'Botanical Gardens picnic date', e:'\uD83C\uDF3F' },
+    { v:'Pikkewyn Street Lookout Point', e:'\uD83C\uDF07' },
+    { v:'Hiking date', e:'\u26F0\uFE0F' },
+    { v:'Coffee & bookshop wander', e:'\u2615' },
+    { v:'Cosy movie night', e:'\uD83C\uDFAC' },
+    { v:'Union Buildings gardens stroll', e:'\uD83C\uDF3C' },
+    { v:'Mini-golf & milkshakes', e:'\u26F3' },
+    { v:'Art gallery afternoon', e:'\uD83C\uDFA8' },
+    { v:'Ice-cream & a slow stroll', e:'\uD83C\uDF66' },
+    { v:'Home-cooked dinner in', e:'\uD83C\uDF7D\uFE0F' },
+  ];
+
+  function renderOptions() {
+    typePop.innerHTML = DATE_OPTIONS.map(o =>
+      '<div class="opt-item' + (typeInput.value === o.v ? ' sel' : '') +
+      '" role="option" data-val="' + o.v.replace(/"/g,'&quot;') + '">' +
+      '<span class="emo">' + o.e + '</span><span>' + o.v + '</span></div>'
+    ).join('');
+  }
+
+  typePop.addEventListener('click', (e) => {
+    const item = e.target.closest('[data-val]');
+    if (!item) return;
+    const val = item.getAttribute('data-val');
+    typeInput.value = val;
+    const opt = DATE_OPTIONS.find(o => o.v === val);
+    typeTrigger.textContent = (opt ? opt.e + '  ' : '') + val;
+    typeTrigger.classList.remove('placeholder');
+    document.getElementById('typeError').textContent = '';
+    closeAll(null);
+  });
+
+  typeTrigger.addEventListener('click', () => {
+    renderOptions();
+    toggle(typePop, 'typeField', typeTrigger);
+  });
+})();
 
 /* =====================================================
    PAGE 2 — form handling
